@@ -1,5 +1,6 @@
 import React, {Component} from 'react'
-import pokemons from '../data/pokemons.json'
+import Pokemon from "./Pokemon"
+import Header from "./Header"
 const url = "https://pokeapi.co/api/v2/pokemon/"
 
 class App extends Component{
@@ -7,44 +8,47 @@ class App extends Component{
       super(props)
       this.state = {
         name: "pikachu", 
-        pokemon: null
+        pokemon: null,
+        loading: true
       }
-
     }
 
     componentDidMount(){
         this.getPokemon(this.state.name)
+    }
+
+    componentDidUpdate(){
+        console.log("I'm here..")
     }
     
     getPokemon(name){
         fetch(url+name)
         .then(response => response.json())
         .then(data => {
-            this.setState({pokemon: data.sprites.other["official-artwork"].front_default})
+            this.setState({
+            pokemon: data,
+            loading: false
+            })
         })
     }
 
 
     changeValue= (e)=> {
         console.log(e.target.value)
-        this.setState({name: e.target.value})
-        this.getPokemon(e.target.value)
+        this.setState({
+            name: e.target.value,
+            loading: true
+        })  // re-render first
+        this.getPokemon(e.target.value) // then re-render second ... via the getPokemon function
       }
 
     render(){ 
         console.log(this.state)
+        const {name, pokemon, loading} = this.state
         return (
             <div>
-                <h1>PokeApp</h1>
-                <p>How many pokemons? {pokemons.length}</p>
-                <select value={this.state.name} onChange={this.changeValue}>
-                    {pokemons.map((obj,index) => 
-                    <option key={index} value={obj.name}>{obj.name}</option>
-                    )
-                    }
-                </select>
-                <p>You selected {this.state.name}</p>
-                <img src={this.state.pokemon} alt={this.state.name}/>        
+                <Header name={name} changeValue={this.changeValue}/>
+                { loading ? <h2>Loading...</h2> : <Pokemon name={name} pokemon={pokemon} />}
             </div>
         )
     }
